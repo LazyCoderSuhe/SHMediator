@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SH.Mediator.Tests/SH.Mediator.Tests.csproj" />
+  <Project Path="SHMediator/SH.Mediator.csproj" />
+</Solution>
