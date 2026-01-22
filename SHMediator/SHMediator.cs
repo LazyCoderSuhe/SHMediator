@@ -15,7 +15,7 @@ namespace SH.Mediator
         public SHMediator(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
-            _options = _serviceProvider.GetService<SHMediatorOptions>() ?? new SHMediatorOptions();
+            _options = _serviceProvider.GetService<SHMediatorOptions>();
         }
 
         private readonly ConcurrentDictionary<(Type RequestType, Type ResponseType), Type> _handlerRRTypes = new();

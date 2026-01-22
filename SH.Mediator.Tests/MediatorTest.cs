@@ -80,7 +80,7 @@ namespace SH.Mediator.Tests
         public async Task Mediator_LoggerInterceptor()
         {
             var services = new ServiceCollection();
-            SHMediatorOptions options = new SHMediatorOptions();
+            SHMediatorOptions options = new SHMediatorOptions(services.BuildServiceProvider());
             var interceptorMock = new Mock<ISHMediatorInterceptor>();
             interceptorMock
                 .Setup(x => x.Publishing(It.IsAny<INotification>()))
@@ -114,7 +114,7 @@ namespace SH.Mediator.Tests
             services.AddLogging();
             services.AddSingleton<IMediator, SHMediator>();
             services.AddTransient<IValidator<Notify>, NotifyValidator>();
-            SHMediatorOptions options = new SHMediatorOptions();
+            SHMediatorOptions options = new SHMediatorOptions(services.BuildServiceProvider());
             options.Interceptors.Add(new SHFluentValidationInterceptor(services.BuildServiceProvider()));
 
             services.AddSingleton(options);

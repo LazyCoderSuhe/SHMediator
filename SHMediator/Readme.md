@@ -68,8 +68,13 @@ public class MyNotify2Handlder : INotificationHandler<MyNotify>
 
 ```
 
+更新内容
+
+*  更新添加拦截器 并支持自定义
+
+
 # 文档目录
 
-- [使用方式](#/docs/00使用方式.md)
-- [拦截器](#/docs/01拦截器.md)
+- [使用方式](/docs/00使用方式.md)
+- [拦截器](/docs/01拦截器.md)
 

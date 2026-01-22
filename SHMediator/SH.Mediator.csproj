@@ -8,7 +8,7 @@
     <PackageProjectUrl>https://github.com/LazyCoderSuhe/SHMediator</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <VersionPrefix>1.0.1.1</VersionPrefix>
+    <VersionPrefix>1.0.2</VersionPrefix>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/LazyCoderSuhe/SHMediator</RepositoryUrl>
