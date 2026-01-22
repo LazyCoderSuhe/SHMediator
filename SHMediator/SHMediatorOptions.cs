@@ -9,6 +9,10 @@ namespace SH.Mediator
     public class SHMediatorOptions
     {
         private readonly ServiceProvider _services;
+        public SHMediatorOptions()
+        {
+            
+        }
         public SHMediatorOptions(ServiceProvider services)
         {
             _services = services;

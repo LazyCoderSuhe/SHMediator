@@ -1,5 +1,7 @@
 ﻿# <center> 使用方式
 
+> # 请您等他升级到 2.0 版本后再使用 
+
 # 安装 NuGet 包
 ```bash
 dotnet add package SHMediator
@@ -70,6 +72,7 @@ public class MyNotify2Handlder : INotificationHandler<MyNotify>
 
 更新内容
 
+*  添加自动注册验证Validator功能
 *  更新添加拦截器 并支持自定义
 
 

@@ -1,9 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SH.Mediator.Exceptions;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SH.Mediator
 {
@@ -11,7 +14,7 @@ namespace SH.Mediator
     {
 
         private readonly IServiceProvider _serviceProvider;
-        private readonly SHMediatorOptions _options;
+        private readonly SHMediatorOptions _options ;
         public SHMediator(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -36,16 +39,17 @@ namespace SH.Mediator
             var handlerType = _handlerRRTypes.GetOrAdd(
                 (requestType, typeof(TResponse)),
                 static key => typeof(IRequestHandler<,>).MakeGenericType(key.RequestType, key.ResponseType));
-            dynamic handler = _serviceProvider.GetService(handlerType);
-            if (handler == null)
-            {
+           
+            var handler = _serviceProvider.GetService(handlerType);
+            if (handler is null)            
                 throw new MediatorException($"未找到处理 {request.GetType().FullName} 的 handler");
-            }
-            var response = await handler.Handle((dynamic)request);
+
+            var method = handlerType.GetMethod("Handle");
+            var response = await (Task<TResponse>)method.Invoke(handler, new object[] { request });
 
             foreach (var item in _options.Interceptors)
             {
-                response = await item.Sended(request, response );
+                response =  item.Sended(request, response );
             }
 
             return response;
@@ -67,13 +71,12 @@ namespace SH.Mediator
             var handlerType = _handlerRTypes.GetOrAdd(
                 requestType,
                 static key => typeof(IRequestHandler<>).MakeGenericType(key));
-            dynamic handler = _serviceProvider.GetService(handlerType);
+            var handler = _serviceProvider.GetService(handlerType);
             if (handler == null)
-            {
                 throw new MediatorException($"未找到处理 {request.GetType().FullName} 的 handler");
-            }
-            await handler.Handle((dynamic)request);
-
+            
+            var method = handlerType.GetMethod("Handle");
+            await (Task)method.Invoke(handler, new object[] { request });
 
             foreach (var item in _options.Interceptors)
             {
@@ -95,8 +98,6 @@ namespace SH.Mediator
                 }
             }
 
-
-
             var requestType = notification.GetType();
             var handlerType = _handlerNotificationTypes.GetOrAdd(requestType,
                 static key =>
@@ -105,16 +106,38 @@ namespace SH.Mediator
                     return typeof(IEnumerable<>).MakeGenericType(_handlerType);
                 }
                 );
-            var handlers = (IEnumerable<dynamic>?)_serviceProvider.GetService(handlerType);
-            if (handlers != null)
+            var handlersObj = _serviceProvider.GetService(handlerType);
+            if (handlersObj is IEnumerable handlers)
             {
+                var notificationHandlerType = typeof(INotificationHandler<>).MakeGenericType(requestType);
+                var handleMethod = notificationHandlerType.GetMethod("Handle", BindingFlags.Public | BindingFlags.Instance);
+
+                if (handleMethod is null)
+                    throw new MissingMethodException(notificationHandlerType.FullName, "Handle");
+
                 var tasks = new List<Task>();
                 foreach (var handler in handlers)
                 {
-                    tasks.Add(handler.Handle((dynamic)notification));
+                    // handler: object
+                    var task = (Task)handleMethod.Invoke(handler, new object[] { notification })!;
+                    tasks.Add(task);
                 }
+
                 await Task.WhenAll(tasks);
             }
+
+
+            //var handlers = (IEnumerable<dynamic>?)_serviceProvider.GetService(handlerType);
+            //if (handlers != null)
+            //{
+            //    var tasks = new List<Task>();
+            //    foreach (var handler in handlers)
+            //    {
+            //        tasks.Add(handler.Handle((dynamic)notification));
+            //    }
+            //    await Task.WhenAll(tasks);
+            //}
+
 
             foreach (var item in _options.Interceptors)
             {
