@@ -17,7 +17,7 @@ namespace SH.Mediator
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(type);
 
-            services.AddSingleton<IMediator, SHMediator>();
+            services.AddTransient<IMediator, SHMediator>();
             // 注册所有 Handler
             // 内部程序集
             RegionDi(services, typeof(IMediator));
@@ -82,7 +82,7 @@ namespace SH.Mediator
                 {
                     if (serviceType == typeof(ISHMediatorInterceptor))
                     {
-                        services.AddSingleton(t);
+                        services.AddTransient(t);
                     }
                 }
             }
@@ -105,7 +105,7 @@ namespace SH.Mediator
 
                     var def = serviceType.GetGenericTypeDefinition();
                     if (IsRegionType(def))
-                        service.AddTransient(serviceType, implementationType);
+                        service.AddScoped(serviceType, implementationType);
 
                 }
             }

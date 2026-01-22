@@ -21,7 +21,7 @@ namespace SH.Mediator
             _options = _serviceProvider.GetService<SHMediatorOptions>();
         }
 
-        private readonly ConcurrentDictionary<(Type RequestType, Type ResponseType), Type> _handlerRRTypes = new();
+        private readonly static ConcurrentDictionary<(Type RequestType, Type ResponseType), Type> _handlerRRTypes = new();
 
         public async Task<TResponse> Send<TResponse>(IRequest<TResponse> request)
         {
@@ -54,7 +54,7 @@ namespace SH.Mediator
 
             return response;
         }
-        private readonly ConcurrentDictionary<Type, Type> _handlerRTypes = new();
+        private readonly static ConcurrentDictionary<Type, Type> _handlerRTypes = new();
 
         public async Task Send(IRequest request)
         {
@@ -85,7 +85,7 @@ namespace SH.Mediator
         }
 
 
-        private readonly ConcurrentDictionary<Type, Type> _handlerNotificationTypes = new();
+        private readonly static ConcurrentDictionary<Type, Type> _handlerNotificationTypes = new();
 
         public async Task Publish(INotification notification)
         {
@@ -125,19 +125,6 @@ namespace SH.Mediator
 
                 await Task.WhenAll(tasks);
             }
-
-
-            //var handlers = (IEnumerable<dynamic>?)_serviceProvider.GetService(handlerType);
-            //if (handlers != null)
-            //{
-            //    var tasks = new List<Task>();
-            //    foreach (var handler in handlers)
-            //    {
-            //        tasks.Add(handler.Handle((dynamic)notification));
-            //    }
-            //    await Task.WhenAll(tasks);
-            //}
-
 
             foreach (var item in _options.Interceptors)
             {
