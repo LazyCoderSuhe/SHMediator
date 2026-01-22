@@ -8,5 +8,6 @@ namespace SH.Mediator
     {
         Task<TResponse> Send<TResponse>(IRequest<TResponse> request);
         Task Send(IRequest request);
+        Task Publish(INotification notification);
     }
 }
