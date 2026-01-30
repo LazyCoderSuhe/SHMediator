@@ -3,50 +3,42 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SH.Mediator.SHMediatorInterceptors
 {
-    public class SHMediatorLoggingInterceptor : ISHMediatorInterceptor
+    public class MediatorLoggingInterceptor<TResponse> : DefaultMediatorInterceptor<TResponse>
     {
-        private readonly ILogger<SHMediatorLoggingInterceptor>? _logger;
+        private readonly ILogger<MediatorLoggingInterceptor<TResponse>> _logger;
 
-        public SHMediatorLoggingInterceptor(ILogger<SHMediatorLoggingInterceptor>? logger =null)
+        public MediatorLoggingInterceptor(ILogger<MediatorLoggingInterceptor<TResponse>> logger, MediatorInterceptorDelegate<TResponse> next)
+            : base(next)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
-
-
-
-        public void Published(INotification notification) =>
-            _logger?.LogInformation("通知类型{NotificationType} 已经发布", notification.GetType().Name);
-
-
-        public Task<bool> Publishing(INotification notification)
+        public override Task<TResponse> Intercept(IRequest<TResponse> request, CancellationToken cancellationToken)
         {
-            _logger?.LogInformation("通知类型{NotificationType} 正在发布", notification.GetType().Name);
-            return Task.FromResult(true);
-        }
-
-        public T Sended<T>(IRequest<T> request, T response)
-        {
-            _logger?.LogInformation("请求类型{RequestType} 已经发送，响应类型{ResponseType}", request.GetType().Name, typeof(T).Name);
-            return response;
-        }
-
-        public void Sended(IRequest request) =>
-            _logger?.LogInformation("请求类型{RequestType} 已经发送", request.GetType().Name);
-
-
-        public Task<bool> Sending<T>(IRequest<T> request)
-        {
-            _logger?.LogInformation("请求类型{RequestType} 正在发送，响应类型{ResponseType}", request.GetType().Name, typeof(T).Name);
-            return Task.FromResult(true);
-        }
-
-        public Task<bool> Sending(IRequest request)
-        {
+            cancellationToken.ThrowIfCancellationRequested();
             _logger?.LogInformation("请求类型{RequestType} 正在发送", request.GetType().Name);
-            return Task.FromResult(true);
+            try
+            {
+                return base.Intercept(request, cancellationToken);
+            }
+            finally
+            {
+                _logger?.LogInformation("请求类型{RequestType} 已经发送", request.GetType().Name);
+            }
+        }
+
+
+    }
+
+    public static class MediatorLoggingInterceptorExtensions
+    {
+        public static SHMediatorOptions UseMediatorLoggingInterceptor(this SHMediatorOptions builder)
+        {
+            return builder.UseSHMediatorInterceptor(typeof(MediatorLoggingInterceptor<>));
         }
     }
 }

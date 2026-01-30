@@ -1,5 +1,4 @@
 <Solution>
   <Project Path="SH.Mediator.Tests/SH.Mediator.Tests.csproj" />
   <Project Path="SHMediator/SH.Mediator.csproj" />
-  <Project Path="ShMeditorBenchmarkDotNet/ShMeditorBenchmarkDotNet.csproj" />
 </Solution>

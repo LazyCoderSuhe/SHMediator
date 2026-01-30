@@ -1,34 +1,28 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SH.Mediator.SHMediatorInterceptors
 {
-    public interface ISHMediatorInterceptor
+
+
+    public interface IMediatorInterceptor<TResponse>
     {
-
-        Task<bool> Sending<T>(IRequest<T> request);
-        T Sended<T>(IRequest<T> request, T response);
-
-        Task<bool> Sending(IRequest request);
-        void Sended(IRequest request);
-
-        Task<bool> Publishing(INotification notification);
-        void Published(INotification notification);
+        public Task<TResponse> Intercept(IRequest<TResponse> request, CancellationToken cancellationToken);
     }
 
-    public abstract class DefaultSHMediatorInterceptor : ISHMediatorInterceptor
+
+    public abstract class DefaultMediatorInterceptor<TResponse> : IMediatorInterceptor<TResponse>
     {
+        private readonly MediatorInterceptorDelegate<TResponse> _next;
+        protected DefaultMediatorInterceptor(MediatorInterceptorDelegate<TResponse> next)
+        {
+            _next = next;
+        }
 
-        public virtual Task<bool> Publishing(INotification notification ) => Task.FromResult(true);
-        public virtual void Published(INotification notification ) {}
-
-
-        public virtual  Task<bool>  Sending<T>(IRequest<T> request) => Task.FromResult(true);
-        public virtual T Sended<T>(IRequest<T> request, T response ) => response;
-
-
-        public virtual  Task<bool> Sending(IRequest request) => Task.FromResult(true);
-        public virtual void Sended(IRequest request) { }
+        public virtual Task<TResponse> Intercept(IRequest<TResponse> request, CancellationToken cancellationToken)
+        {
+            return _next(request, cancellationToken);
+        }
     }
 }

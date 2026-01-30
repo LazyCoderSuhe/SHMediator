@@ -4,12 +4,37 @@ using SH.Mediator.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
 namespace SH.Mediator.Tests
 {
     [TestClass]
     public class MediatorServiceCollectionTests
     {
+        public class Notify: IRequest
+        {
+            public string? Title { get; set; }
+            public string? Message { get; set; }
+        }
+        public class NotifyHandler : IRequestHandler<Notify>
+        {
+            public Task<Unit> Handle(Notify request, CancellationToken cancellationToken)
+            {
+                // Handle the notification logic here
+                return Task.FromResult(Unit.Value);
+            }
+        }
+
+
+        public class NotifyValidator : AbstractValidator<Notify>
+        {
+            public NotifyValidator()
+            {
+                RuleFor(x => x.Title).NotEmpty().WithMessage("Title is required.");
+                RuleFor(x => x.Message).NotEmpty().WithMessage("Message is required.");
+            }
+        }
+
         [TestMethod]
         public void Mediator_RegionValidater_Tests()
         {
@@ -33,10 +58,8 @@ namespace SH.Mediator.Tests
 
         public class SampleRequestHanderler : IRequestHandler<SampleRequest, string>
         {
-            public Task<string> Handle(SampleRequest request)
-            {
-                return Task.FromResult($"Handled: {request.Message}");
-            }
+            public Task<string> Handle(SampleRequest request, CancellationToken cancellationToken)
+                => Task.FromResult($"Handled: {request.Message}");
         }
         public class FalseRequestValidator : AbstractValidator<SampleRequest>
         {
@@ -48,36 +71,38 @@ namespace SH.Mediator.Tests
         }
 
         [TestMethod]
-        public async Task Mediator_RequestValidation_FailsForInvalidRequest()
+        public  void Mediator_RequestValidation_FailsForInvalidRequest()
         {
             // Arrange
             ServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging();
           //  serviceCollection.AddLogging();
             serviceCollection.AddSHMediator(typeof(FalseRequestValidator));
             var mediator = serviceCollection.BuildServiceProvider().GetRequiredService<IMediator>();
 
-            var invalidRequest = new SampleRequest(null);
+            var invalidRequest = new SampleRequest("");
             // Act & Assert
-            await Assert.ThrowsAsync<MediatorValidationException>(async () =>
+             Assert.ThrowsAsync<MediatorValidationException>(async () =>
             {
-                await mediator.Send(invalidRequest);
-            });
+                await mediator.SendAsync(invalidRequest);
+            }).Wait();
         }
 
         [TestMethod]
-        public async Task Mediator_RequestValidation_Success()
+        public void Mediator_RequestValidation_Success()
         {
             // Arrange
             ServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging();
             //  serviceCollection.AddLogging();
             serviceCollection.AddSHMediator(typeof(FalseRequestValidator));
             var mediator = serviceCollection.BuildServiceProvider().GetRequiredService<IMediator>();
 
             var validRequest = new SampleRequest("ValidMessage");
             // Act & Assert
-            var response = await mediator.Send(validRequest);
-            
-            Assert.IsTrue(response.Contains("Handled"));
+            var response =  mediator.SendAsync(validRequest).Result;
+
+            Assert.Contains("Handled", response);
         }
 
     }

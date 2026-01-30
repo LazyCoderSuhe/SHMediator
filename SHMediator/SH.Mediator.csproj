@@ -8,7 +8,7 @@
     <PackageProjectUrl>https://github.com/LazyCoderSuhe/SHMediator</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <VersionPrefix>1.1.5</VersionPrefix>
+    <VersionPrefix>1.1.9</VersionPrefix>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/LazyCoderSuhe/SHMediator</RepositoryUrl>
@@ -29,6 +29,10 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Handlers\" />
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,14 @@ using System.Text;
 
 namespace SH.Mediator
 {
-    public interface INotification
+
+
+    public interface IRequest<TResponse> 
     {
     }
+
+    public interface IRequest : IRequest<Unit>
+    {
+    }
+
 }

@@ -10,7 +10,7 @@ namespace SH.Mediator
 {
     public static class MediatorServiceCollection
     {
-        public static ServiceCollection AddSHMediator(this ServiceCollection services, Type type
+        public static IServiceCollection AddSHMediator(this IServiceCollection services, Type type
             , Action<SHMediatorOptions> action = null
         )
         {
@@ -23,18 +23,19 @@ namespace SH.Mediator
             RegionDi(services, typeof(IMediator));
             // 外部程序集
             RegionDi(services, type);
-            // 注册默认日志拦截器
+            // 注册拦截器 这个有问题
             Interceptors(services);
             // 注册 FluentValidation 相关验证器
             RegionValidater(services, type.Assembly.GetTypes());
-            services.AddSingleton(services);
+
+           // services.AddSingleton(services);
             // 配置选项
             ConfigOptions(services, action);
   
             return services;
         }
 
-        public static void RegionValidater(ServiceCollection services, Type[] types)
+        public static void RegionValidater(IServiceCollection services, Type[] types)
         {
 
             foreach (var t in types)
@@ -54,23 +55,23 @@ namespace SH.Mediator
             }
         }
 
-        private static void ConfigOptions(ServiceCollection services, Action<SHMediatorOptions> action)
+        private static void ConfigOptions(IServiceCollection services, Action<SHMediatorOptions> action)
         {
             using var serviceProvider = services.BuildServiceProvider();
-            SHMediatorOptions options = new SHMediatorOptions(serviceProvider);
+            SHMediatorOptions options = new SHMediatorOptions();
             if (options.UseLoggingInterceptor)
             {
-                options.AddInterceptor<SHMediatorLoggingInterceptor>();
+                options.UseMediatorLoggingInterceptor();
             }
             if (options.UseFluentValidationInterceptor)
             {
-                options.AddInterceptor<SHFluentValidationInterceptor>();
+                options.UseFluentValidationInterceptor();
             }
             action?.Invoke(options);
             services.AddSingleton(options);
         }
 
-        private static void Interceptors(ServiceCollection services)
+        private static void Interceptors(IServiceCollection services)
         {
             // 查找并注册所有拦截器
             var types = typeof(IMediator).Assembly.GetTypes();
@@ -80,7 +81,7 @@ namespace SH.Mediator
                     continue;
                 foreach (var serviceType in t.GetInterfaces())
                 {
-                    if (serviceType == typeof(ISHMediatorInterceptor))
+                    if (serviceType == typeof(IMediatorInterceptor<>))
                     {
                         services.AddTransient(t);
                     }
@@ -88,7 +89,7 @@ namespace SH.Mediator
             }
         }
 
-        private static void RegionDi(ServiceCollection service, Type type)
+        private static void RegionDi(IServiceCollection service, Type type)
         {
             // 动态注册 IHandler
             var types = type.Assembly.GetTypes();
